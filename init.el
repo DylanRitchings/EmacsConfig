@@ -11,7 +11,7 @@
  '(cua-mode t nil (cua-base))
  '(custom-enabled-themes (quote (tango-dark)))
  '(inhibit-startup-screen t)
- '(package-selected-packages (quote (multiple-cursors use-package))))
+ '(package-selected-packages (quote (terraform-mode multiple-cursors use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -31,8 +31,8 @@
 
 ;; Use package install
 (dolist (package '(use-package))
-   (unless (package-installed-p package)
-       (package-install package)))
+  (unless (package-installed-p package)
+    (package-install package)))
 
 ;; Move backups
 (setq backup-directory-alist
@@ -60,3 +60,84 @@
 ;; TODO org fix shift select with CUA conflict
 
 
+;; Terraform
+(use-package terraform-mode
+  :ensure t)
+(add-hook 'terraform-mode-hook #'terraform-format-on-save-mode)
+
+
+
+;; Auto indent every 10 secs
+;; (defun indent-org-block-automatically ()
+;;   (when (org-in-src-block-p)
+;;    (org-edit-special)
+;;     (indent-region (point-min) (point-max))
+;;     (org-edit-src-exit)))
+
+;; (run-at-time 1 10 'indent-org-block-automatically)
+
+;; Auto indent when paste
+(defun indent-org-block ()
+  ;; (when (org-in-src-block-p)
+  (org-edit-special)
+  (indent-region (point-min) (point-max))
+  (org-edit-src-exit))
+
+(defun paste-with-indent ()
+  (interactive)
+  (when (region-active-p)
+    (call-interactively 'delete-region))
+  (call-interactively 'cua-paste)
+  (indent-org-block))
+
+;;FIX
+(define-key cua--cua-keys-keymap (kbd "C-v") 'paste-with-indent)
+
+
+;; Maybe assign to all
+;; (use-package org
+;;   :bind (:map org-mode-map
+;; 	      ("C-v" . paste-with-indent)))
+
+
+
+;; (defvar indent-paste-mode
+;;   (let ((map (make-sparse-keymap)))
+;;     (define-key map (kbd "C-p") 'some-function)
+;;     map)
+;;   "indent-paste-mode keymap.")
+
+;; (define-minor-mode indent-paste-mode
+;;   "A minor mode so that my key settings override annoying major modes."
+;;   :init-value t
+;;   :lighter " my-keys")
+
+;; (indent-paste-mode 1)
+
+;; (define-key (org-mode-map
+;;   (kbd "<tab>") #'udf/indent-org-block)
+
+
+;; Aggressive Indent Mode
+;; (use-package aggressive-indent
+;;   :ensure t)
+
+;; (global-aggressive-indent-mode 1)
+
+
+;; Org mode
+;; Shift select org
+(setq org-support-shift-select t)
+
+;; Open all titles
+(setq org-startup-folded nil)
+
+;; Org source code colour
+(custom-set-faces
+ '(org-block-begin-line
+   ((t (:underline "#181c1c" :foreground "#465252" :background "#181c1c"))))
+ '(org-block
+   ((t (:background "#1e2424"))))
+ '(org-block-end-line
+   ((t (:overline "#181c1c" :foreground "#465252" :background "#181c1c"))))
+ )(require 'color)
