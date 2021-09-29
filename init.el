@@ -149,3 +149,12 @@
  '(org-block-end-line
    ((t (:overline "#181c1c" :foreground "#465252" :background "#181c1c"))))
  )(require 'color)
+
+
+
+
+;; Syntax checker (may need fixing on mac)
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+
