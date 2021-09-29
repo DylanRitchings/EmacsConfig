@@ -60,10 +60,18 @@
 ;; TODO org fix shift select with CUA conflict
 
 
-;; Terraform
+;; Terraform and HCL
 (use-package terraform-mode
   :ensure t)
 (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode)
+
+(use-package hcl-mode
+  :ensure t)
+
+
+;; (custom-set-variables
+;;  '(hcl-indent-level 4))
+
 
 
 
@@ -86,11 +94,11 @@
 (defun paste-with-indent ()
   (interactive)
   (when (region-active-p)
-    (call-interactively 'delete-region))
+  (call-interactively 'delete-region))
   (call-interactively 'cua-paste)
   (indent-org-block))
 
-;;FIX
+
 (define-key cua--cua-keys-keymap (kbd "C-v") 'paste-with-indent)
 
 
@@ -130,7 +138,7 @@
 (setq org-support-shift-select t)
 
 ;; Open all titles
-(setq org-startup-folded nil)
+;(setq org-startup-folded nil)
 
 ;; Org source code colour
 (custom-set-faces
