@@ -1,4 +1,5 @@
 ;; default
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -11,13 +12,18 @@
  '(cua-mode t nil (cua-base))
  '(custom-enabled-themes (quote (tango-dark)))
  '(inhibit-startup-screen t)
- '(package-selected-packages (quote (terraform-mode multiple-cursors use-package))))
+ '(org-startup-truncated nil)
+ '(package-selected-packages
+   (quote
+    (flycheck terraform-mode multiple-cursors use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(org-block ((t (:background "#1e2424"))))
+ '(org-block-begin-line ((t (:underline "#181c1c" :foreground "#465252" :background "#181c1c"))))
+ '(org-block-end-line ((t (:overline "#181c1c" :foreground "#465252" :background "#181c1c")))))
 
 
 
@@ -141,14 +147,7 @@
 ;(setq org-startup-folded nil)
 
 ;; Org source code colour
-(custom-set-faces
- '(org-block-begin-line
-   ((t (:underline "#181c1c" :foreground "#465252" :background "#181c1c"))))
- '(org-block
-   ((t (:background "#1e2424"))))
- '(org-block-end-line
-   ((t (:overline "#181c1c" :foreground "#465252" :background "#181c1c"))))
- )(require 'color)
+(require 'color)
 
 
 
@@ -158,3 +157,16 @@
   :ensure t
   :init (global-flycheck-mode))
 
+
+
+;; Word wrap
+
+;; (toggle-truncate-lines -1)
+;; (setq-default truncate-lines nil)
+;; (setq truncate-partial-width-windows nil)
+;; (add-hook 'org-mode-hook 'toggle-truncate-lines-off)
+
+;;(add-hook 'hack-local-variables-hook #'toggle-truncate-lines-off)
+
+;; Numbered lines
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
