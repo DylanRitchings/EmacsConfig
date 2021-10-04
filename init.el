@@ -1,3 +1,4 @@
+
 ;; default
 
 (custom-set-variables
@@ -60,6 +61,7 @@
 
 (global-set-key (kbd "C-\"") 'mc/edit-lines)
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-?") 'mc/mark-all-like-this)
 
@@ -108,36 +110,6 @@
 (define-key cua--cua-keys-keymap (kbd "C-v") 'paste-with-indent)
 
 
-;; Maybe assign to all
-;; (use-package org
-;;   :bind (:map org-mode-map
-;; 	      ("C-v" . paste-with-indent)))
-
-
-
-;; (defvar indent-paste-mode
-;;   (let ((map (make-sparse-keymap)))
-;;     (define-key map (kbd "C-p") 'some-function)
-;;     map)
-;;   "indent-paste-mode keymap.")
-
-;; (define-minor-mode indent-paste-mode
-;;   "A minor mode so that my key settings override annoying major modes."
-;;   :init-value t
-;;   :lighter " my-keys")
-
-;; (indent-paste-mode 1)
-
-;; (define-key (org-mode-map
-;;   (kbd "<tab>") #'udf/indent-org-block)
-
-
-;; Aggressive Indent Mode
-;; (use-package aggressive-indent
-;;   :ensure t)
-
-;; (global-aggressive-indent-mode 1)
-
 
 ;; Org mode
 ;; Shift select org
@@ -152,7 +124,7 @@
 
 
 
-;; Syntax checker (may need fixing on mac)
+;; Syntax checker (TODO: FIX)
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode))
@@ -161,12 +133,29 @@
 
 ;; Word wrap
 
-;; (toggle-truncate-lines -1)
-;; (setq-default truncate-lines nil)
-;; (setq truncate-partial-width-windows nil)
-;; (add-hook 'org-mode-hook 'toggle-truncate-lines-off)
 
-;;(add-hook 'hack-local-variables-hook #'toggle-truncate-lines-off)
 
 ;; Numbered lines
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+
+;; WSL
+
+(defun wsl-shell ()
+  (interactive)
+  (let ((explicit-shell-file-name "C:/Windows/System32/bash.exe"))
+    (shell)))
+
+
+(global-set-key [f1] 'wsl-shell)
+
+;; Change window
+(global-set-key (kbd "<prior>") 'other-window)
+
+
+;; Close window
+
+(global-set-key (kbd "C-<end>") 'delete-window)
+
+;; Open file
+(global-set-key [f2] 'find-file)
