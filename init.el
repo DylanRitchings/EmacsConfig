@@ -11,17 +11,17 @@
  '(ansi-color-names-vector
    ["black" "#d55e00" "#009e73" "#f8ec59" "#0072b2" "#cc79a7" "#56b4e9" "white"])
  '(cua-mode t nil (cua-base))
- '(custom-enabled-themes (quote (tango-dark)))
+ '(custom-enabled-themes '(tango-dark))
  '(inhibit-startup-screen t)
  '(org-startup-truncated nil)
- '(package-selected-packages
-   (quote
-    (flycheck terraform-mode multiple-cursors use-package))))
+ '(package-selected-packages '(flycheck terraform-mode multiple-cursors use-package))
+ '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(default ((t (:family "Fira Code Medium" :foundry "outline" :slant normal :weight normal :height 113 :width normal))))
  '(org-block ((t (:background "#1e2424"))))
  '(org-block-begin-line ((t (:underline "#181c1c" :foreground "#465252" :background "#181c1c"))))
  '(org-block-end-line ((t (:overline "#181c1c" :foreground "#465252" :background "#181c1c")))))
@@ -139,6 +139,8 @@
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
 
+
+
 ;; WSL
 
 (defun wsl-shell ()
@@ -149,13 +151,22 @@
 
 (global-set-key [f1] 'wsl-shell)
 
+;; Change buffer
+(global-set-key (kbd "M-<next>") 'next-buffer)
+(global-set-key (kbd "M-<prior>") 'previous-buffer)
+
 ;; Change window
 (global-set-key (kbd "<prior>") 'other-window)
 
 
 ;; Close window
 
-(global-set-key (kbd "C-<end>") 'delete-window)
+(global-set-key (kbd "C-<end>") 'kill-buffer-and-window)
 
 ;; Open file
 (global-set-key [f2] 'find-file)
+
+;; y and n
+(fset 'yes-or-no-p 'y-or-n-p)
+
+
