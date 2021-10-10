@@ -141,7 +141,7 @@
 
 
 
-;; WSL
+;; WSL2
 
 (defun wsl-shell ()
   (interactive)
