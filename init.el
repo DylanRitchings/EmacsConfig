@@ -11,17 +11,19 @@
  '(ansi-color-names-vector
    ["black" "#d55e00" "#009e73" "#f8ec59" "#0072b2" "#cc79a7" "#56b4e9" "white"])
  '(cua-mode t nil (cua-base))
- '(custom-enabled-themes '(tango-dark))
+ '(custom-enabled-themes (quote (tango-dark)))
  '(inhibit-startup-screen t)
  '(org-startup-truncated nil)
- '(package-selected-packages '(flycheck terraform-mode multiple-cursors use-package))
+ '(package-selected-packages
+   (quote
+    (magit flycheck terraform-mode multiple-cursors use-package)))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Fira Code Medium" :foundry "outline" :slant normal :weight normal :height 113 :width normal))))
+ '(default ((t (:family "Ubuntu Mono" :foundry "DAMA" :slant normal :weight normal :height 128 :width normal))))
  '(org-block ((t (:background "#1e2424"))))
  '(org-block-begin-line ((t (:underline "#181c1c" :foreground "#465252" :background "#181c1c"))))
  '(org-block-end-line ((t (:overline "#181c1c" :foreground "#465252" :background "#181c1c")))))
@@ -81,15 +83,6 @@
 ;;  '(hcl-indent-level 4))
 
 
-
-
-;; Auto indent every 10 secs
-;; (defun indent-org-block-automatically ()
-;;   (when (org-in-src-block-p)
-;;    (org-edit-special)
-;;     (indent-region (point-min) (point-max))
-;;     (org-edit-src-exit)))
-
 ;; (run-at-time 1 10 'indent-org-block-automatically)
 
 ;; Auto indent when paste
@@ -143,13 +136,20 @@
 
 ;; WSL2
 
-(defun wsl-shell ()
-  (interactive)
-  (let ((explicit-shell-file-name "C:/Windows/System32/bash.exe"))
-    (shell)))
+;; (defun wsl-shell ()
+;;   (interactive)
+;;   (let ((explicit-shell-file-name "C:/Windows/System32/bash.exe"))
+;;     (shell)))
 
 
-(global-set-key [f1] 'wsl-shell)
+;; (defun run-shell ()
+;;   (interactive)
+;;   (shell))
+
+
+;; (global-set-key [f1] 'wsl-shell)
+
+(global-set-key [f1] 'shell)
 
 ;; Change buffer
 (global-set-key (kbd "M-<next>") 'next-buffer)
@@ -170,3 +170,9 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 
 
+;;Default directory and ubuntu if
+(setq default-directory "/home/dylan/Dev/")
+
+;; magit
+(use-package magit
+  :ensure t)
