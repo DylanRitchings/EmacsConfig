@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: TF Security Group
+# key: /sg
+# --
+
+
+resource "aws_security_group_rule" "$1" {
+  description       = "$2"
+  type              = "$3"
+  from_port         = "$4"
+  to_port           = "$5"
+  protocol          = "tcp"
+  cidr_blocks       = local.$6
+  security_group_id = module.$7
+}
+

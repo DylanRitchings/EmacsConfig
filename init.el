@@ -16,7 +16,7 @@
  '(org-startup-truncated nil)
  '(package-selected-packages
    (quote
-    (magit flycheck terraform-mode multiple-cursors use-package)))
+    (yassnippet bash-completion magit flycheck terraform-mode multiple-cursors use-package)))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -158,6 +158,8 @@
 ;; Change window
 (global-set-key (kbd "<prior>") 'other-window)
 
+;; Open file in new window
+(global-set-key [f3] 'find-file-other-window)
 
 ;; Close window
 
@@ -176,3 +178,25 @@
 ;; magit
 (use-package magit
   :ensure t)
+
+;; Bash completion
+(use-package bash-completion
+  :ensure t)
+(autoload 'bash-completion-dynamic-complete
+  "bash-completion"
+  "BASH completion hook")
+(add-hook 'shell-dynamic-complete-functions
+          'bash-completion-dynamic-complete)
+(put 'scroll-left 'disabled nil)
+
+
+;; load snippets
+;;(load-file "/home/dylan/.emacs.d/snippet.el")
+(use-package yasnippet
+  :ensure t
+  :init
+  (yas-global-mode 1)
+       :config
+       (add-to-list 'yas-snippet-dirs (locate-user-emacs-file "snippets")))
+
+

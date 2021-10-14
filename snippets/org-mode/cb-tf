@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: TF codeblock
+# key: /cb-tf
+# --
+
+#+BEGIN_SRC terraform
+    $1
+#+END_SRC
+
+$2
