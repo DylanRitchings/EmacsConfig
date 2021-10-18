@@ -16,7 +16,7 @@
  '(org-startup-truncated nil)
  '(package-selected-packages
    (quote
-    (yassnippet bash-completion magit flycheck terraform-mode multiple-cursors use-package)))
+    (auto-complete yassnippet bash-completion magit flycheck terraform-mode multiple-cursors use-package)))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -200,4 +200,10 @@
        (add-to-list 'yas-snippet-dirs (locate-user-emacs-file "snippets")))
 
 
-;;test
+(use-package auto-complete
+  :ensure t)
+
+(ac-config-default)
+
+(global-set-key (kbd "M-RET") 'newline)
+

@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: SSM Parameter 
+# key: /ssm
+# --
+
+data "aws_ssm_parameter" "$1" {
+  name = "\${local.ssm_environment_path_prefix}$2"
+}
+
+$3
