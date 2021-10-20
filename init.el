@@ -16,7 +16,7 @@
  '(org-startup-truncated nil)
  '(package-selected-packages
    (quote
-    (auto-complete yassnippet bash-completion magit flycheck terraform-mode multiple-cursors use-package)))
+    (dumb-jump dump-jump auto-complete yassnippet bash-completion magit flycheck terraform-mode multiple-cursors use-package)))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -148,8 +148,13 @@
 
 
 ;; (global-set-key [f1] 'wsl-shell)
+(defun term-other-window ()
+  (interactive)
+  (let ((buf (term "/bin/zsh")))
+    (switch-to-buffer (other-buffer buf))
+    (switch-to-buffer-other-window buf)))
 
-(global-set-key [f1] 'shell)
+(global-set-key [f1] 'term-other-window)
 
 ;; Change buffer
 (global-set-key (kbd "M-<next>") 'next-buffer)
@@ -164,6 +169,7 @@
 ;; Close window
 
 (global-set-key (kbd "C-<end>") 'kill-buffer-and-window)
+(global-set-key (kbd "C-<home>") 'kill-this-buffer)
 
 ;; Open file
 (global-set-key [f2] 'find-file)
@@ -207,3 +213,19 @@
 
 (global-set-key (kbd "M-RET") 'newline)
 
+;; registers
+
+(global-set-key [f4] 'jump-to-register)
+(set-register ?w '(file . "/home/dylan/Dev/work/defra/"))
+(set-register ?d '(file . "/home/dylan/Dev/"))
+
+
+;; ;; Dumb Jump
+
+(use-package dumb-jump
+  :bind (("C-=" . xref-find-definitions-other-window)
+	 ([f12] . xref-find-definitions)
+	 ([f11] . xref-pop-marker-stack))
+  :ensure t)
+
+(add-to-list 'xref-backend-functions 'dumb-jump-xref-activate t)

@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: PARAM
+# key: /prm
+# --
+"$1" = {
+      ParameterName = "$2"
+      Value         = "$3"
+      Description   = "$4"
+      Tags          = {$5}
+    }
+    $6
