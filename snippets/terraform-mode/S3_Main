@@ -1,0 +1,55 @@
+# -*- mode: snippet -*-
+# name: s3_main
+# key: /s3_mn 
+# --
+
+provider "aws" {
+  region = var.region
+  default_tags {
+    tags = {
+      map-migrated = var.map-migrated
+      AdminGroup   = var.admin_group
+      AccessGroup  = var.access_group
+    }
+  }
+}
+#tfsec:ignore:AWS002
+#tfsec:ignore:AWS098
+module "$1" {
+  source            = "git::https://git-codecommit.eu-west-2.amazonaws.com/v1/repos/TF_common_modules//tf_aws_s3?ref=tf_aws_s3-v0.0.1"
+  bucket            = data.aws_ssm_parameter.ISAMBucketName.value
+  s3_versioning     = var.s3_versioning
+  kms_master_key_id = data.aws_ssm_parameter.ToolingS3Arn.value
+  sse_algorithm     = var.sse_algorithm
+}
+
+resource "aws_s3_bucket_object" "CARA_ISAM_backups_folder" {
+  bucket     = data.aws_ssm_parameter.ISAMBucketName.value
+  key        = "backups/"
+  content    = "application/x-directory"
+  depends_on = [module.CARA_ISAM_S3]
+}
+
+//deny all public
+resource "aws_s3_bucket_public_access_block" "CARA_ISAM_s3_public_access_block" {
+  bucket                  = data.aws_ssm_parameter.ISAMBucketName.value
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_policy" "CARA_ISAM_deny_policy" {
+  bucket = data.aws_ssm_parameter.ISAMBucketName.value
+  policy = data.template_file.s3_bucket_deny_policy.rendered
+  // Once the policy is applied then we can no longer use local terraform to manage without removing the vpc restiction
+  depends_on = [aws_s3_bucket_object.CARA_ISAM_backups_folder]
+}
+
+data "template_file" "s3_bucket_deny_policy" {
+  template = file("./policies/p_s3_tooling_vpc_only.json")
+
+  vars = {
+    BUCKETNAME = data.aws_ssm_parameter.ISAMBucketName.value
+  }
+}

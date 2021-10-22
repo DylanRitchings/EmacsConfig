@@ -13,10 +13,11 @@
  '(cua-mode t nil (cua-base))
  '(custom-enabled-themes (quote (tango-dark)))
  '(inhibit-startup-screen t)
+ '(lsp-terraform-server "/home/dylan/terraform-lsp")
  '(org-startup-truncated nil)
  '(package-selected-packages
    (quote
-    (dumb-jump dump-jump auto-complete yassnippet bash-completion magit flycheck terraform-mode multiple-cursors use-package)))
+    (lsp-mode markdown-mode dumb-jump dump-jump auto-complete yassnippet bash-completion magit terraform-mode multiple-cursors use-package)))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -70,15 +71,6 @@
 ;; TODO org fix shift select with CUA conflict
 
 
-;; Terraform and HCL
-(use-package terraform-mode
-  :ensure t)
-(add-hook 'terraform-mode-hook #'terraform-format-on-save-mode)
-
-(use-package hcl-mode
-  :ensure t)
-
-
 ;; (custom-set-variables
 ;;  '(hcl-indent-level 4))
 
@@ -119,9 +111,17 @@
 
 ;; Syntax checker (TODO: FIX)
 (use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
+  :ensure t)
 
+(flycheck-define-checker tflint
+  "Terraform linter tflint"
+  :command ("tflint"
+            source-inplace)
+  :error-parser flycheck-parse-checkstyle
+  :error-filter flycheck-dequalify-error-ids
+  :modes (terraform-mode))
+
+(add-to-list 'flycheck-checkers 'tflint)
 
 
 ;; Word wrap
@@ -229,3 +229,50 @@
   :ensure t)
 
 (add-to-list 'xref-backend-functions 'dumb-jump-xref-activate t)
+
+(setq create-lockfiles nil)
+
+;; README MODE
+
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
+
+
+;; LSP MODE
+;; (use-package lsp-mode
+;;   :init
+;;   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+;;   (setq lsp-keymap-prefix "C-c l")
+;;   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+;;          (terraform-mode . lsp-deferred)
+;;          ;; if you want which-key integration
+;;          (lsp-mode . lsp-enable-which-key-integration))
+;;   :commands lsp)
+
+
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :init (setq lsp-keymap-prefix "C-c l")
+  :config
+  (lsp-enable-which-key-integration t)
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("terraform-lsp" "serve"))
+		    :major-modes '(terraform-mode)
+		    :server-id 'terraform-lsp)))
+;; (setq lsp-terraform-enable-logging t)
+
+(use-package terraform-mode
+  :ensure t
+  :hook (terraform-mode . lsp-deferred)
+  )
+
+(add-hook 'terraform-mode-hook #'terraform-format-on-save-mode)
+
+(use-package hcl-mode
+  :ensure t)
