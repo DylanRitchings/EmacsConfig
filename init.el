@@ -1,6 +1,3 @@
-
-;; default
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -8,31 +5,22 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
- '(ansi-color-names-vector
-   ["black" "#d55e00" "#009e73" "#f8ec59" "#0072b2" "#cc79a7" "#56b4e9" "white"])
  '(cua-mode t nil (cua-base))
  '(custom-enabled-themes (quote (tango-dark)))
  '(inhibit-startup-screen t)
- '(lsp-terraform-server "/home/dylan/terraform-lsp")
- '(org-startup-truncated nil)
+ '(lsp-terraform-enable-logging nil)
+ '(lsp-terraform-server "/usr/bin/terraform-ls")
  '(package-selected-packages
    (quote
-    (lsp-mode markdown-mode dumb-jump dump-jump auto-complete yassnippet bash-completion magit terraform-mode multiple-cursors use-package)))
- '(tool-bar-mode nil))
+    (dap-mode lsp-ui yasnippet which-key use-package terraform-mode multiple-cursors magit dumb-jump bash-completion auto-complete))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Ubuntu Mono" :foundry "DAMA" :slant normal :weight normal :height 128 :width normal))))
- '(org-block ((t (:background "#1e2424"))))
- '(org-block-begin-line ((t (:underline "#181c1c" :foreground "#465252" :background "#181c1c"))))
- '(org-block-end-line ((t (:overline "#181c1c" :foreground "#465252" :background "#181c1c")))))
+ )
 
-
-
-
-
+;;;;;;;;;;;;;;;PACKAGE MANAGER
 ;; Package manager
 (require 'package)
 (add-to-list 'package-archives
@@ -43,21 +31,94 @@
 (dolist (package '(use-package))
   (unless (package-installed-p package)
     (package-install package)))
+;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;; LOOK
+(tool-bar-mode -1)
+
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+
+;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;; SORT and EASE OF USE
 
 ;; Move backups
 (setq backup-directory-alist
       `(("." . ,(concat user-emacs-directory "backups"))))
 
-;; Disable toolbar (copy, paste etc)
-(tool-bar-mode -1)
+
+;; y and n
+(fset 'yes-or-no-p 'y-or-n-p)
 
 
-;; Interactive commands (maybe replace with helm)
+;;whichkey
+(use-package which-key
+  :ensure t)
+(which-key-mode)
+;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;; NAVIGATION
+
+(global-set-key (kbd "M-RET") 'newline)
+
+;; Open file
+(global-set-key [f2] 'find-file)
+
+;; Open file in new window
+(global-set-key [f3] 'find-file-other-window)
+
+;; Close window
+
+(global-set-key (kbd "C-<end>") 'kill-buffer-and-window)
+(global-set-key (kbd "C-<home>") 'kill-this-buffer)
+
+;;Dumb Jump
+;; (use-package xref
+;;   :ensure t)
+
+(use-package dumb-jump
+  :bind (("C-=" . dumb-jump-go-other-window)
+	 ([f12] . dumb-jump-go )
+	 ([f11] . dumb-jump-back))
+  :ensure t)
+
+;; (add-to-list 'xref-backend-functions 'dumb-jump-xref-activate t)
+
+;;IDO
 (setq ido-everywhere t)
 (setq ido-enable-flex-matching t)
 (ido-mode t)
 
-;; Multiple cursors
+
+;; registers
+
+(global-set-key [f4] 'jump-to-register)
+(set-register ?w '(file . "/home/dylan/Dev/work/defra/"))
+(set-register ?d '(file . "/home/dylan/Dev/"))
+
+;; terminal
+
+(defun term-other-window ()
+  (interactive)
+  (let ((buf (term "/bin/zsh")))
+    (switch-to-buffer (other-buffer buf))
+    (switch-to-buffer-other-window buf)))
+
+(global-set-key [f1] 'term-other-window)
+
+
+
+
+;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;AUTO FILES
+;; Move backups
+(setq backup-directory-alist
+      `(("." . ,(concat user-emacs-directory "backups"))))
+
+
+;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;MUTLIPLE CURSORS
 (use-package multiple-cursors
   :ensure t)
 
@@ -68,22 +129,9 @@
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-?") 'mc/mark-all-like-this)
 
-;; TODO org fix shift select with CUA conflict
-
-
-;; (custom-set-variables
-;;  '(hcl-indent-level 4))
-
-
-;; (run-at-time 1 10 'indent-org-block-automatically)
-
+;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;ORG MODE
 ;; Auto indent when paste
-(defun indent-org-block ()
-  ;; (when (org-in-src-block-p)
-  (org-edit-special)
-  (indent-region (point-min) (point-max))
-  (org-edit-src-exit))
-
 (defun paste-with-indent ()
   (interactive)
   (when (region-active-p)
@@ -91,147 +139,17 @@
   (call-interactively 'cua-paste)
   (indent-org-block))
 
-
 (define-key cua--cua-keys-keymap (kbd "C-v") 'paste-with-indent)
-
-
-
-;; Org mode
 ;; Shift select org
 (setq org-support-shift-select t)
 
-;; Open all titles
-;(setq org-startup-folded nil)
 
 ;; Org source code colour
 (require 'color)
+;;;;;;;;;;;;;;
 
 
-
-
-;; Syntax checker (TODO: FIX)
-(use-package flycheck
-  :ensure t)
-
-(flycheck-define-checker tflint
-  "Terraform linter tflint"
-  :command ("tflint"
-            source-inplace)
-  :error-parser flycheck-parse-checkstyle
-  :error-filter flycheck-dequalify-error-ids
-  :modes (terraform-mode))
-
-(add-to-list 'flycheck-checkers 'tflint)
-
-
-;; Word wrap
-
-
-
-;; Numbered lines
-(add-hook 'prog-mode-hook 'display-line-numbers-mode)
-
-
-
-
-;; WSL2
-
-;; (defun wsl-shell ()
-;;   (interactive)
-;;   (let ((explicit-shell-file-name "C:/Windows/System32/bash.exe"))
-;;     (shell)))
-
-
-;; (defun run-shell ()
-;;   (interactive)
-;;   (shell))
-
-
-;; (global-set-key [f1] 'wsl-shell)
-(defun term-other-window ()
-  (interactive)
-  (let ((buf (term "/bin/zsh")))
-    (switch-to-buffer (other-buffer buf))
-    (switch-to-buffer-other-window buf)))
-
-(global-set-key [f1] 'term-other-window)
-
-;; Change buffer
-(global-set-key (kbd "M-<next>") 'next-buffer)
-(global-set-key (kbd "M-<prior>") 'previous-buffer)
-
-;; Change window
-(global-set-key (kbd "<prior>") 'other-window)
-
-;; Open file in new window
-(global-set-key [f3] 'find-file-other-window)
-
-;; Close window
-
-(global-set-key (kbd "C-<end>") 'kill-buffer-and-window)
-(global-set-key (kbd "C-<home>") 'kill-this-buffer)
-
-;; Open file
-(global-set-key [f2] 'find-file)
-
-;; y and n
-(fset 'yes-or-no-p 'y-or-n-p)
-
-
-;;Default directory and ubuntu if
-(setq default-directory "/home/dylan/Dev/")
-
-;; magit
-(use-package magit
-  :ensure t)
-
-;; Bash completion
-(use-package bash-completion
-  :ensure t)
-(autoload 'bash-completion-dynamic-complete
-  "bash-completion"
-  "BASH completion hook")
-(add-hook 'shell-dynamic-complete-functions
-          'bash-completion-dynamic-complete)
-(put 'scroll-left 'disabled nil)
-
-
-;; load snippets
-;;(load-file "/home/dylan/.emacs.d/snippet.el")
-(use-package yasnippet
-  :ensure t
-  :init
-  (yas-global-mode 1)
-       :config
-       (add-to-list 'yas-snippet-dirs (locate-user-emacs-file "snippets")))
-
-
-(use-package auto-complete
-  :ensure t)
-
-(ac-config-default)
-
-(global-set-key (kbd "M-RET") 'newline)
-
-;; registers
-
-(global-set-key [f4] 'jump-to-register)
-(set-register ?w '(file . "/home/dylan/Dev/work/defra/"))
-(set-register ?d '(file . "/home/dylan/Dev/"))
-
-
-;; ;; Dumb Jump
-
-(use-package dumb-jump
-  :bind (("C-=" . xref-find-definitions-other-window)
-	 ([f12] . xref-find-definitions)
-	 ([f11] . xref-pop-marker-stack))
-  :ensure t)
-
-(add-to-list 'xref-backend-functions 'dumb-jump-xref-activate t)
-
-(setq create-lockfiles nil)
-
+;;;;;;;;;;;;;; README
 ;; README MODE
 
 (use-package markdown-mode
@@ -241,20 +159,27 @@
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
+;;;;;;;;;;;;;;
 
 
-;; LSP MODE
-;; (use-package lsp-mode
-;;   :init
-;;   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-;;   (setq lsp-keymap-prefix "C-c l")
-;;   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-;;          (terraform-mode . lsp-deferred)
-;;          ;; if you want which-key integration
-;;          (lsp-mode . lsp-enable-which-key-integration))
-;;   :commands lsp)
+;; ;;;;;;;;;;;;;; FLYCHECK
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode)
+  )
 
+;; (flycheck-define-checker tflint
+;;   "Terraform linter tflint"
+;;   :command ("tflint"
+;;             source-inplace)
+;;   :error-parser flycheck-parse-checkstyle
+;;   :error-filter flycheck-dequalify-error-ids
+;;   :modes (terraform-mode))
 
+;; (add-to-list 'flycheck-checkers 'tflint)
+;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;; LSP
 
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
@@ -262,10 +187,22 @@
   :config
   (lsp-enable-which-key-integration t)
   (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("terraform-lsp" "serve"))
+   (make-lsp-client :new-connection (lsp-stdio-connection '("/usr/bin/terraform-ls" "serve"))
 		    :major-modes '(terraform-mode)
 		    :server-id 'terraform-lsp)))
 ;; (setq lsp-terraform-enable-logging t)
+;; (setq lsp-log-io nil) 
+
+(use-package lsp-ui
+  :ensure t)
+
+
+;; Dap Mode
+
+(use-package dap-mode
+  :ensure t)
+
+;; Terraform
 
 (use-package terraform-mode
   :ensure t
@@ -276,3 +213,57 @@
 
 (use-package hcl-mode
   :ensure t)
+
+
+
+;; (setq lsp-modeline-diagnostics-enable t)
+
+;;;;;;;;;;;;;;
+
+
+;; ;;;;;;;;;;;;;; COMPANY MODE
+(use-package company
+  :ensure t)
+(add-hook 'after-init-hook 'global-company-mode)
+
+;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;; KILL WORD BACKSPACE
+
+
+(defun aborn/backward-kill-word ()
+  "Customize/Smart backward-kill-word."
+  (interactive)
+  (let* ((cp (point))
+         (backword)
+         (end)
+         (space-pos)
+         (backword-char (if (bobp)
+                            ""           ;; cursor in begin of buffer
+                          (buffer-substring cp (- cp 1)))))
+    (if (equal (length backword-char) (string-width backword-char))
+        (progn
+          (save-excursion
+            (setq backword (buffer-substring (point) (progn (forward-word -1) (point)))))
+          (setq ab/debug backword)
+          (save-excursion
+            (when (and backword          ;; when backword contains space
+                       (s-contains? " " backword))
+              (setq space-pos (ignore-errors (search-backward " ")))))
+          (save-excursion
+            (let* ((pos (ignore-errors (search-backward-regexp "\n")))
+                   (substr (when pos (buffer-substring pos cp))))
+              (when (or (and substr (s-blank? (s-trim substr)))
+                        (s-contains? "\n" backword))
+                (setq end pos))))
+          (if end
+              (kill-region cp end)
+            (if space-pos
+                (kill-region cp space-pos)
+              (backward-kill-word 1))))
+      (kill-region cp (- cp 1)))         ;; word is non-english word
+    ))
+
+(global-set-key  [C-backspace]
+            'aborn/backward-kill-word)
+
+;;;;;;;;;;;;;;; END KILL WORD BACKSPACE
