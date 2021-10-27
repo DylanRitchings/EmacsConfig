@@ -12,7 +12,7 @@
  '(lsp-terraform-server "/usr/bin/terraform-ls")
  '(package-selected-packages
    (quote
-    (yasnippet-snippets dap-mode lsp-ui yasnippet which-key use-package terraform-mode multiple-cursors magit dumb-jump bash-completion auto-complete))))
+    (company-terraform yasnippet-snippets dap-mode lsp-ui yasnippet which-key use-package terraform-mode multiple-cursors magit dumb-jump bash-completion auto-complete))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -71,6 +71,13 @@
 
 (global-set-key (kbd "C-<end>") 'kill-buffer-and-window)
 (global-set-key (kbd "C-<home>") 'kill-this-buffer)
+
+;; Change window
+(global-set-key (kbd "<prior>") 'other-window)
+
+;; Change buffer
+(global-set-key (kbd "M-<next>") 'next-buffer)
+(global-set-key (kbd "M-<prior>") 'previous-buffer)
 ;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;Dumb Jump
@@ -188,8 +195,8 @@
 		    :server-id 'terraform-lsp))
   :bind (:map lsp-mode-map ("C-c C-f" . lsp-format-buffer))
   :hook ((java-mode python-mode go-mode rust-mode
-          js-mode js2-mode typescript-mode web-mode
-          c-mode c++-mode objc-mode terraform-mode) . lsp-deferred)
+		    js2-mode typescript-mode web-mode
+		    c-mode c++-mode objc-mode terraform-mode) . lsp-deferred)
   :config
   (defun lsp-update-server ()
     "Update LSP server."
@@ -197,27 +204,13 @@
     ;; Equals to `C-u M-x lsp-install-server'
     (lsp-install-server t)))
 
-;; (use-package lsp-mode
-;;   :commands (lsp lsp-deferred)
-;;   :init (setq lsp-keymap-prefix "C-c l")
-;;   :config
-;;   (lsp-enable-which-key-integration t)
-;;   (lsp-register-client
-;;    (make-lsp-client :new-connection (lsp-stdio-connection '("/usr/bin/terraform-ls" "serve"))
-;;   ;; (make-lsp-client :new-connection (lsp-stdio-connection '("/home/dylan/terraform-lsp" "serve"))
-;; 		    :major-modes '(terraform-mode)
-;; 		    :server-id 'terraform-lsp)))
-;; ;; (setq lsp-terraform-enable-logging t)
-;; ;; (setq lsp-log-io nil)
-;; ;; (setq lsp-modeline-diagnostics-enable t)
 
 (use-package lsp-ui
   :ensure t
-  ;; :requires flycheck
-  ;; :after lsp-mode
+  :requires flycheck
+  :after lsp-mode
+  
   )
-;; (setq lsp-ui-imenu-auto-refresh t)
-
 
 ;; ;; Dap Mode
 
@@ -226,16 +219,64 @@
 
 
 ;;;;;;;;;;;;;;; ;;COMPANY MODE
+
 (use-package company
-  :ensure t)
+  :diminish company-mode
+  :hook ((prog-mode LaTeX-mode latex-mode ess-r-mode) . company-mode)
+  :bind
+  (:map company-active-map
+        ([tab] . smarter-tab-to-complete)
+        ("TAB" . smarter-tab-to-complete))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-tooltip-align-annotations t)
+  (company-require-match 'never)
+  ;; Don't use company in the following modes
+  (company-global-modes '(not shell-mode eaf-mode))
+  ;; Trigger completion immediately.
+  (company-idle-delay 0.1)
+  ;; Number the candidates (use M-1, M-2 etc to select completions).
+  (company-show-numbers t)
+  :config
+  (global-company-mode 1)
+  (defun smarter-tab-to-complete ()
+    "Try to `org-cycle', `yas-expand', and `yas-next-field' at current cursor position.
+
+If all failed, try to complete the common part with `company-complete-common'"
+    (interactive)
+    (when yas-minor-mode
+      (let ((old-point (point))
+            (old-tick (buffer-chars-modified-tick))
+            (func-list
+             (if (equal major-mode 'org-mode) '(org-cycle yas-expand yas-next-field)
+               '(yas-expand yas-next-field))))
+        (catch 'func-suceed
+          (dolist (func func-list)
+            (ignore-errors (call-interactively func))
+            (unless (and (eq old-point (point))
+                         (eq old-tick (buffer-chars-modified-tick)))
+              (throw 'func-suceed t)))
+          (company-complete-common))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (add-to-list 'company-backends '(company-capf company-dabbrev))
 (add-hook 'after-init-hook 'global-company-mode)
 
 ;; Terraform
 
+(use-package company-terraform
+  :ensure t)
+
 (use-package terraform-mode
-  :ensure t
-  ;; :hook (terraform-mode . lsp-deferred)
-  )
+   :defer t
+   :init
+    (progn
+      (require 'company-terraform)
+      (company-terraform-init)
+     )
+   :config (setq terraform-indent-level 2)
+   )
 
 (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode)
 
@@ -249,10 +290,14 @@
 
 
 ;; ;;;;;;;;;;;;;; FLYCHECK
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode)
-  )
+
+
+
+;; (use-package flycheck
+;;   :ensure t
+;;   :init (global-flycheck-mode)
+;;   :hook (terraform-mode)
+;;   )
 
 ;; (flycheck-define-checker tflint
 ;;   "Terraform linter tflint"
@@ -264,7 +309,54 @@
 ;; (add-to-list 'flycheck-checkers 'tflint)
 
 
+;; (use-package flycheck
+;;   :defer t
+;;   :hook (after-init . global-flycheck-mode)
+;;   :commands (flycheck-add-mode)
+;;   :custom
+;;   (flycheck-global-modes
+;;    '(not outline-mode diff-mode shell-mode eshell-mode term-mode))
+;;   (flycheck-emacs-lisp-load-path 'inherit)
+;;   (flycheck-indication-mode (if (display-graphic-p) 'right-fringe 'right-margin))
+;;   :init
+;;   (if (display-graphic-p)
+;;       (use-package flycheck-posframe
+;; 	:ensure t
+;;         :custom-face
+;;         (flycheck-posframe-face ((t (:foreground ,(face-foreground 'success)))))
+;;         (flycheck-posframe-info-face ((t (:foreground ,(face-foreground 'success)))))
+;;         :hook (flycheck-mode . flycheck-posframe-mode)
+;;         :custom
+;;         (flycheck-posframe-position 'window-bottom-left-corner)
+;;         (flycheck-posframe-border-width 3)
+;;         (flycheck-posframe-inhibit-functions
+;;          '((lambda (&rest _) (bound-and-true-p company-backend)))))
+;;     (use-package flycheck-pos-tip
+;;       :defines flycheck-pos-tip-timeout
+;;       :hook (flycheck-mode . flycheck-pos-tip-mode)
+;;       :custom (flycheck-pos-tip-timeout 30)))
+;;   :config
+;;   (use-package flycheck-popup-tip
+;;     :ensure t
+;;     :hook (terraform-mode)
+;;     :hook (flycheck-mode . flycheck-popup-tip-mode))
+;;   (when (fboundp 'define-fringe-bitmap)
+;;     (define-fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
+;;       [16 48 112 240 112 48 16] nil nil 'center))
+;;   (when (executable-find "vale")
+;;     (use-package flycheck-vale
+;;       :config
+;;       (flycheck-vale-setup)
+;;       (flycheck-add-mode 'vale 'latex-mode))))
+
+
+
+
+
+
+
 ;;;;;;;;;;;;;;
+
 
 
 ;;;;;;;;;;;;;;; KILL WORD BACKSPACE
@@ -335,6 +427,12 @@
 
 ;;;;;;;;;;;;;;; END YASnippet
 
+;;;;;;;;;;;;;; JSON MODE
 
+(use-package json-mode
+  :ensure t
+  :mode "\\.json\\'")
+
+;;;;;;;;;;;;;; END JSON MODE
 
 
