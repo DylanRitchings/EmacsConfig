@@ -205,12 +205,12 @@
     (lsp-install-server t)))
 
 
-(use-package lsp-ui
-  :ensure t
-  :requires flycheck
-  :after lsp-mode
+;; (use-package lsp-ui
+;;   :ensure t
+;;   :requires flycheck
+;;   :after lsp-mode
   
-  )
+;;   )
 
 ;; ;; Dap Mode
 
