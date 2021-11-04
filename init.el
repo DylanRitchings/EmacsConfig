@@ -12,7 +12,7 @@
  '(lsp-terraform-server "/usr/bin/terraform-ls")
  '(package-selected-packages
    (quote
-    (company-terraform yasnippet-snippets dap-mode lsp-ui yasnippet which-key use-package terraform-mode multiple-cursors magit dumb-jump bash-completion auto-complete))))
+    (company-tabnine wrap-region company-terraform yasnippet-snippets dap-mode lsp-ui yasnippet which-key use-package terraform-mode multiple-cursors magit dumb-jump bash-completion auto-complete))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -78,14 +78,28 @@
 ;; Change buffer
 (global-set-key (kbd "M-<next>") 'next-buffer)
 (global-set-key (kbd "M-<prior>") 'previous-buffer)
+
+(global-set-key (kbd "<M-right>") 'end-of-line)
+(global-set-key (kbd "<M-left>") 'beginning-of-line)
+(global-set-key (kbd "<M-down>") 'end-of-buffer)
+(global-set-key (kbd "<M-up>") 'beginning-of-buffer)
+
+(global-set-key (kbd "M-<backspace>") (lambda ()
+				       (interactive)
+				       (kill-line 0)))
+(global-set-key (kbd "M-DEL") 'kill-line)
+
+
 ;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;Dumb Jump
 ;; (use-package xref
 ;;   :ensure t)
-
+(setq xref-prompt-for-identifier nil)
 (use-package dumb-jump
   :bind (("C-=" . dumb-jump-go-other-window)
+	 ([f10] . xref-find-references)
 	 ([f12] . dumb-jump-go )
 	 ([f11] . dumb-jump-back))
   :ensure t)
@@ -234,7 +248,7 @@
   ;; Don't use company in the following modes
   (company-global-modes '(not shell-mode eaf-mode))
   ;; Trigger completion immediately.
-  (company-idle-delay 0.1)
+  (company-idle-delay 0)
   ;; Number the candidates (use M-1, M-2 etc to select completions).
   (company-show-numbers t)
   :config
@@ -258,6 +272,14 @@ If all failed, try to complete the common part with `company-complete-common'"
               (throw 'func-suceed t)))
           (company-complete-common))))))
 
+
+
+;;;;;;; Tabnine
+
+(use-package company-tabnine
+  :ensure t)
+(require 'company-tabnine)
+(add-to-list 'company-backends #'company-tabnine)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (add-to-list 'company-backends '(company-capf company-dabbrev))
@@ -290,67 +312,6 @@ If all failed, try to complete the common part with `company-complete-common'"
 
 
 ;; ;;;;;;;;;;;;;; FLYCHECK
-
-
-
-;; (use-package flycheck
-;;   :ensure t
-;;   :init (global-flycheck-mode)
-;;   :hook (terraform-mode)
-;;   )
-
-;; (flycheck-define-checker tflint
-;;   "Terraform linter tflint"
-;;   :command ("tflint"
-;;             source-inplace)
-;;   :error-parser flycheck-parse-checkstyle
-;;   :error-filter flycheck-dequalify-error-ids
-;;   :modes (terraform-mode))
-;; (add-to-list 'flycheck-checkers 'tflint)
-
-
-;; (use-package flycheck
-;;   :defer t
-;;   :hook (after-init . global-flycheck-mode)
-;;   :commands (flycheck-add-mode)
-;;   :custom
-;;   (flycheck-global-modes
-;;    '(not outline-mode diff-mode shell-mode eshell-mode term-mode))
-;;   (flycheck-emacs-lisp-load-path 'inherit)
-;;   (flycheck-indication-mode (if (display-graphic-p) 'right-fringe 'right-margin))
-;;   :init
-;;   (if (display-graphic-p)
-;;       (use-package flycheck-posframe
-;; 	:ensure t
-;;         :custom-face
-;;         (flycheck-posframe-face ((t (:foreground ,(face-foreground 'success)))))
-;;         (flycheck-posframe-info-face ((t (:foreground ,(face-foreground 'success)))))
-;;         :hook (flycheck-mode . flycheck-posframe-mode)
-;;         :custom
-;;         (flycheck-posframe-position 'window-bottom-left-corner)
-;;         (flycheck-posframe-border-width 3)
-;;         (flycheck-posframe-inhibit-functions
-;;          '((lambda (&rest _) (bound-and-true-p company-backend)))))
-;;     (use-package flycheck-pos-tip
-;;       :defines flycheck-pos-tip-timeout
-;;       :hook (flycheck-mode . flycheck-pos-tip-mode)
-;;       :custom (flycheck-pos-tip-timeout 30)))
-;;   :config
-;;   (use-package flycheck-popup-tip
-;;     :ensure t
-;;     :hook (terraform-mode)
-;;     :hook (flycheck-mode . flycheck-popup-tip-mode))
-;;   (when (fboundp 'define-fringe-bitmap)
-;;     (define-fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
-;;       [16 48 112 240 112 48 16] nil nil 'center))
-;;   (when (executable-find "vale")
-;;     (use-package flycheck-vale
-;;       :config
-;;       (flycheck-vale-setup)
-;;       (flycheck-add-mode 'vale 'latex-mode))))
-
-
-
 
 
 
@@ -436,3 +397,36 @@ If all failed, try to complete the common part with `company-complete-common'"
 ;;;;;;;;;;;;;; END JSON MODE
 
 
+;;;;;;;;;;;;;; WRAP REGION
+(use-package wrap-region
+  :ensure t)
+ (wrap-region-global-mode t)
+;;;;;;;;;;;;;; END WRAP REGION
+
+
+
+;;;;;;;;;;;;; PRE-COMMIT FUNCTION
+
+
+
+
+;;;;;;;;;;;;; END PRE-COMMIT
+
+
+
+;; (defun my-shell-execute(cmd)
+;;    (interactive "sShell command: ")
+;;    (buf (term "/bin/zsh")
+;;    ;;(shell (get-buffer-create "my-shell-buf"))
+;;    (process-send-string (get-buffer-process "my-shell-buf") (concat "reset\n" cmd "\nexit 0 &> /dev/null\n")))
+
+
+
+;;;;;;;;;;;;; PROJECTILE
+
+(use-package projectile
+  :ensure t)
+(projectile-mode +1)
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+
+;;;;;;;;;;;;; END PROJECTile
